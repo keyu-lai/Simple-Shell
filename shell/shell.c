@@ -7,19 +7,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include "Link.h"
-
-char *read_line(void);
-char **parse_command(char *line, int *num, char *delim);
-void shell_pwd(int num);
-void shell_cd(char **args, int num);
-void print_paths(void);
-void shell_path(char **args, int num);
-void search(char **args, int num);
-int shell_execute(char **args, int num);
-void print_history(void);
-void shell_history(char **args, int num);
-int shell_cmd(char *line);
-void execute_his(const char* str);
+#include "Shell.h"
 
 struct Link paths;
 struct Link history;
@@ -30,7 +18,7 @@ int main(int argc, char **argv)
 
 	Init_link(&paths);
 	Init_link(&history);
-	
+
 	while (1) {
 		printf("$");
 		line = read_line();
@@ -79,16 +67,15 @@ int shell_execute(char **args, int num)
 	pid = fork();
 	if (pid < 0) {
 		printf("error: %s\n", strerror(errno));
-		exit(EXIT_FAILURE);	
-	} 
+		exit(EXIT_FAILURE);
+	}
 	if (pid == 0) {
 		search(args, num);
 		return EXIT_LOOP;
-	}
-	else {
+	} else {
 		int return_code;
 
-		while (pid != wait(&return_code));
+		while (pid != wait(&return_code)) {}
 		return CONTINUE_LOOP;
 	}
 }
@@ -109,8 +96,9 @@ void search(char **args, int num)
 	}
 	while ((p = p->next) != paths.tail) {
 		int dir_len = strlen(p->str) + strlen(args[0]) + 2;
+
 		exc_dir = malloc(dir_len * sizeof(char));
-		if(exc_dir == NULL)
+		if (exc_dir == NULL)
 			malloc_failure();
 		strcpy(exc_dir, p->str);
 		if (exc_dir[strlen(exc_dir)-1] != '/')
@@ -158,14 +146,14 @@ void shell_history(char **args, int num)
 	}
 	if (num > 2) {
 		printf("error: %s\n", "Invalid history command");
-		return;	
+		return;
 	}
 	if (!strcmp(args[1], "-c")) {
 		clear(&history);
 		Init_link(&history);
 		return;
 	}
-	
+
 	for (i = 0; i < strlen(args[1]); ++i) {
 		if (args[1][i] > '9' || args[1][i] < '0') {
 			printf("error: %s\n", "Invalid history command");
@@ -183,8 +171,8 @@ void shell_history(char **args, int num)
 		if (--his_num < 0) {
 			execute_his(p->str);
 			return;
-		}			
-	}		
+		}
+	}
 }
 
 void print_paths(void)
@@ -196,9 +184,8 @@ void print_paths(void)
 		return;
 	}
 	printf("%s", p->str);
-	while ((p = p->next) != paths.tail) {
+	while ((p = p->next) != paths.tail)
 		printf(":%s", p->str);
-	}
 	printf("\n");
 }
 
@@ -214,7 +201,7 @@ void shell_path(char **args, int num)
 	}
 
 	if (!strcmp(args[1], "+")) {
-		if (!check_duplicate(&paths, args[2]))	
+		if (!check_duplicate(&paths, args[2]))
 			insert(&paths, args[2]);
 	} else if (!strcmp(args[1], "-"))
 		delete_str(&paths, args[2]);

@@ -1,54 +1,59 @@
 diff --git a/shell/Link.c b/shell/Link.c
 new file mode 100644
-index 0000000..5ddc74d
+index 0000000..bec9aa3
 --- /dev/null
 +++ b/shell/Link.c
-@@ -0,0 +1,118 @@
-+#include <stdio.h> 
+@@ -0,0 +1,124 @@
++#include <stdio.h>
 +#include <string.h>
 +#include <stdlib.h>
 +#include <errno.h>
 +#include "Link.h"
 +
-+void malloc_failure(void) {
++void malloc_failure(void)
++{
 +	printf("error: %s\n", strerror(errno));
 +	exit(EXIT_FAILURE);	
 +}
 +
-+void Init_link(Link *link)
++void Init_link(struct Link *link)
 +{
-+	if ((link->head = malloc(sizeof(Node))) == NULL)
++	link->head = malloc(sizeof(struct Node));
++	if (link->head == NULL)
 +		malloc_failure();
-+	if ((link->tail = malloc(sizeof(Node))) == NULL)
++	link->tail = malloc(sizeof(struct Node));
++	if (link->tail == NULL)
 +		malloc_failure();
-+	if ((link->head->str = malloc(sizeof(char))) == NULL)
++	link->head->str = malloc(sizeof(char));
++	if (link->head->str == NULL)
 +		malloc_failure();
 +	link->head->prev = NULL;
 +	link->head->next = link->tail;
-+	if ((link->tail->str = malloc(sizeof(char))) == NULL)
++	link->tail->str = malloc(sizeof(char));
++	if (link->tail->str == NULL)
 +		malloc_failure();
 +	link->tail->prev = link->head;
 +	link->tail->next = NULL;
 +	link->num = 0;
 +}
 +
-+int check_duplicate(Link *link, const char *str)
++int check_duplicate(struct Link *link, const char *str)
 +{
-+	Node *p = link->head;
-+	
++	struct Node *p = link->head;
++
 +	while ((p = p->next) != link->tail) {
-+		if (!strcmp(p->str, str)) {
++		if (!strcmp(p->str, str))
 +			return 1;
-+		}
 +	}
 +	return 0;
 +}
 +
-+void insert(Link *link, const char *str)
++void insert(struct Link *link, const char *str)
 +{
-+	Node *p = link->tail->prev;
++	struct Node *p = link->tail->prev;
 +
-+	if ((link->tail->prev = malloc(sizeof(Node))) == NULL)
++	link->tail->prev = malloc(sizeof(struct Node));
++	if (link->tail->prev == NULL)
 +		malloc_failure();
 +	link->tail->prev->str = malloc((strlen(str) + 1) * sizeof(char));
 +	if (link->tail->prev->str == NULL)
@@ -60,10 +65,11 @@ index 0000000..5ddc74d
 +	++(link->num);
 +}
 +
-+void delete_str(Link *link, const char *str)
++void delete_str(struct Link *link, const char *str)
 +{
-+	Node *p = link->head;
-+	Node *tmp;
++	struct Node *p = link->head;
++	struct Node *tmp;
++
 +	while ((p = p->next) != link->tail) {
 +		if (!strcmp(p->str, str)) {
 +			p->next->prev = p->prev;
@@ -77,9 +83,9 @@ index 0000000..5ddc74d
 +	}
 +}
 +
-+void delete_last(Link *link)
++void delete_last(struct Link *link)
 +{
-+	Node *p = link->tail->prev;
++	struct Node *p = link->tail->prev;
 +
 +	if (p == link->head)
 +		return;
@@ -90,9 +96,9 @@ index 0000000..5ddc74d
 +	--(link->num);
 +}
 +
-+void delete_first(Link *link)
++void delete_first(struct Link *link)
 +{
-+	Node *tmp = link->head->next;
++	struct Node *tmp = link->head->next;
 +
 +	if (tmp == link->tail)
 +		return;
@@ -100,13 +106,13 @@ index 0000000..5ddc74d
 +	tmp->next->prev = link->head;
 +	free(tmp->str);
 +	free(tmp);
-+	--(link->num);	
++	--(link->num);
 +}
 +
-+void clear(Link *link)
++void clear(struct Link *link)
 +{
-+	Node *p = link->head;
-+	Node *tmp;
++	struct Node *p = link->head;
++	struct Node *tmp;
 +
 +	while (p != NULL) {
 +		tmp = p->next;
@@ -117,58 +123,53 @@ index 0000000..5ddc74d
 +	link->num = 0;
 +}
 +
-+int size(Link *link)
++int size(struct Link *link)
 +{
 +	return link->num;
 +}
 +
 diff --git a/shell/Link.h b/shell/Link.h
 new file mode 100644
-index 0000000..91581d8
+index 0000000..1a05030
 --- /dev/null
 +++ b/shell/Link.h
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,26 @@
 +#ifndef LINK_H_
 +#define LINK_H_
 +
-+typedef struct Node Node;
-+typedef struct Link Link;
-+
-+struct Node
-+{
++struct Node {
 +	char *str;
-+	Node *prev;
-+	Node *next;
++	struct Node *prev;
++	struct Node *next;
 +};
 +
-+struct Link
-+{
-+	Node *head;
-+	Node *tail;
++struct Link {
++	struct Node *head;
++	struct Node *tail;
 +	int num;
 +};
 +
 +void malloc_failure(void);
-+void Init_link(Link *link);
-+void insert(Link *link, const char *str);
-+void delete_str(Link *link, const char *str);
-+void delete_first(Link *link);
-+void clear(Link *link);
-+int size(Link *link);
-+void delete_last(Link *link);
-+int check_duplicate(Link *link, const char *str);
++void Init_link(struct Link *link);
++void insert(struct Link *link, const char *str);
++void delete_str(struct Link *link, const char *str);
++void delete_first(struct Link *link);
++void clear(struct Link *link);
++int size(struct Link *link);
++void delete_last(struct Link *link);
++int check_duplicate(struct Link *link, const char *str);
 +
 +#endif
 diff --git a/shell/shell.c b/shell/shell.c
-index 07b0fbf..8c27784 100644
+index 07b0fbf..d5c22bd 100644
 --- a/shell/shell.c
 +++ b/shell/shell.c
-@@ -1,3 +1,287 @@
+@@ -1,3 +1,290 @@
 -int main(int argc, char **argv) {
 -	return 0;
-+#include <stdio.h>     
-+#include <stdlib.h>   
-+#include <unistd.h> 
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
 +#include <string.h>
 +#include <linux/limits.h>
 +#include <errno.h>
@@ -182,33 +183,33 @@ index 07b0fbf..8c27784 100644
 +void shell_cd(char **args, int num);
 +void print_paths(void);
 +void shell_path(char **args, int num);
-+void search(char** args, int num);
-+int shell_execute(char** args, int num);
++void search(char **args, int num);
++int shell_execute(char **args, int num);
 +void print_history(void);
 +void shell_history(char **args, int num);
 +int shell_cmd(char *line);
 +void execute_his(const char* str);
 +
-+Link paths;
-+Link history;
++struct Link paths;
++struct Link history;
 +
 +int main(int argc, char **argv)
-+{ 
++{
 +	char *line;
-+	
++
 +	Init_link(&paths);
 +	Init_link(&history);
-+		
-+	while(1) {
++	
++	while (1) {
 +		printf("$");
 +		line = read_line();
-+		if(shell_cmd(line))
++		if (shell_cmd(line))
 +			break;
 +	}
 +
 +	clear(&paths);
 +	clear(&history);
-+   	return EXIT_SUCCESS;
++	return EXIT_SUCCESS;
  }
 +
 +#define EXIT_LOOP 1
@@ -233,14 +234,14 @@ index 07b0fbf..8c27784 100644
 +		shell_path(args, num);
 +	else if (!strcmp(args[0], "history"))
 +		shell_history(args, num);
-+	else 
++	else
 +		res = shell_execute(args, num);
 +	free(line);
 +	free(args);
 +	return res;
 +}
 +
-+int shell_execute(char** args, int num)
++int shell_execute(char **args, int num)
 +{
 +	int pid;
 +
@@ -255,16 +256,17 @@ index 07b0fbf..8c27784 100644
 +	}
 +	else {
 +		int return_code;
++
 +		while (pid != wait(&return_code));
 +		return CONTINUE_LOOP;
-+	}	
++	}
 +}
 +
-+void search(char** args, int num)
++void search(char **args, int num)
 +{
 +	char *exc_dir;
-+	Node *p = paths.head;
-+	
++	struct Node *p = paths.head;
++
 +	if (index(args[0], '/') != NULL) {
 +		execv(args[0], args);
 +		printf("error: %s\n", strerror(errno));
@@ -273,10 +275,11 @@ index 07b0fbf..8c27784 100644
 +	if (size(&paths) == 0) {
 +		printf("error: %s\n", "No such file or directory");
 +		return;
-+	}	
++	}
 +	while ((p = p->next) != paths.tail) {
 +		int dir_len = strlen(p->str) + strlen(args[0]) + 2;
-+		if((exc_dir = malloc(dir_len * sizeof(char))) == NULL) 
++		exc_dir = malloc(dir_len * sizeof(char));
++		if(exc_dir == NULL)
 +			malloc_failure();
 +		strcpy(exc_dir, p->str);
 +		if (exc_dir[strlen(exc_dir)-1] != '/')
@@ -285,23 +288,22 @@ index 07b0fbf..8c27784 100644
 +		execv(exc_dir, args);
 +		free(exc_dir);
 +	}
-+	printf("error: %s\n", strerror(errno));	
++	printf("error: %s\n", strerror(errno));
 +}
 +
 +#define HISTORY_MAX 100
 +void print_history(void)
 +{
 +	int i = 0;
-+	Node *p = history.head;
++	struct Node *p = history.head;
 +
-+	while(size(&history) > HISTORY_MAX)
++	while (size(&history) > HISTORY_MAX)
 +		delete_first(&history);
-+	while ((p = p->next) != history.tail) {
++	while ((p = p->next) != history.tail)
 +		printf("%d %s\n", i++, p->str);
-+	}
 +}
 +
-+void execute_his(const char* str)
++void execute_his(const char *str)
 +{
 +	char *line;
 +
@@ -316,7 +318,7 @@ index 07b0fbf..8c27784 100644
 +{
 +	int i;
 +	int his_num;
-+	Node *p;
++	struct Node *p;
 +
 +	delete_last(&history);
 +	if (num == 1) {
@@ -325,7 +327,7 @@ index 07b0fbf..8c27784 100644
 +	}
 +	if (num > 2) {
 +		printf("error: %s\n", "Invalid history command");
-+		return;			
++		return;	
 +	}
 +	if (!strcmp(args[1], "-c")) {
 +		clear(&history);
@@ -334,7 +336,7 @@ index 07b0fbf..8c27784 100644
 +	}
 +	
 +	for (i = 0; i < strlen(args[1]); ++i) {
-+		if(args[1][i] > '9' || args[1][i] < '0') {
++		if (args[1][i] > '9' || args[1][i] < '0') {
 +			printf("error: %s\n", "Invalid history command");
 +			return;
 +		}
@@ -342,7 +344,7 @@ index 07b0fbf..8c27784 100644
 +	his_num = atoi(args[1]);
 +	if (his_num >= size(&history) || his_num >= HISTORY_MAX) {
 +		printf("error: %s\n", "Invalid history command");
-+		return;		
++		return;
 +	}
 +
 +	p = history.head;
@@ -356,7 +358,7 @@ index 07b0fbf..8c27784 100644
 +
 +void print_paths(void)
 +{
-+	Node *p = paths.head->next;
++	struct Node *p = paths.head->next;
 +
 +	if (p == paths.tail) {
 +		printf("\n");
@@ -381,7 +383,7 @@ index 07b0fbf..8c27784 100644
 +	}
 +
 +	if (!strcmp(args[1], "+")) {
-+		if (!check_duplicate(&paths, args[2]))		
++		if (!check_duplicate(&paths, args[2]))	
 +			insert(&paths, args[2]);
 +	} else if (!strcmp(args[1], "-"))
 +		delete_str(&paths, args[2]);
@@ -392,17 +394,17 @@ index 07b0fbf..8c27784 100644
 +void shell_pwd(int num)
 +{
 +	char cwd[PATH_MAX];
-+	
++
 +	if (num > 1) {
-+		printf("error: %s\n", "Invalid pwd command");	
++		printf("error: %s\n", "Invalid pwd command");
 +		return;
 +	}
 +
 +	if (getcwd(cwd, PATH_MAX) == NULL) {
 +		printf("error: %s\n", strerror(errno));
-+		return;	
-+	} else 
-+		printf("%s\n", cwd);
++		return;
++	}
++	printf("%s\n", cwd);
 +}
 +
 +void shell_cd(char **args, int num)
@@ -421,7 +423,8 @@ index 07b0fbf..8c27784 100644
 +char **parse_command(char *line, int *num, char *delim)
 +{
 +	char *arg;
-+	char **args = malloc(MAX_ARG * sizeof(char*));
++	char **args = malloc(MAX_ARG * sizeof(char *));
++
 +	if (args == NULL)
 +		malloc_failure();
 +	*num = 0;
@@ -441,6 +444,7 @@ index 07b0fbf..8c27784 100644
 +{
 +	char *line = NULL;
 +	size_t len = 0;
++
 +	if (getline(&line, &len, stdin) == -1) {
 +		printf("error: %s\n", "Cannot read a line");
 +		free(line);
@@ -448,7 +452,7 @@ index 07b0fbf..8c27784 100644
 +	}
 +	len = strlen(line);
 +	if (line[len-1] == EOF || line[len-1] == '\n')
-+		line[len-1] = '\0';		
++		line[len-1] = '\0';
 +	return line;
 +}
 +

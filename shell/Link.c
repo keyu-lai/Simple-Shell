@@ -7,7 +7,7 @@
 void malloc_failure(void)
 {
 	printf("error: %s\n", strerror(errno));
-	exit(EXIT_FAILURE);	
+	exit(EXIT_FAILURE);
 }
 
 void Init_link(struct Link *link)
