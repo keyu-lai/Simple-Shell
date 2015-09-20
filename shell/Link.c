@@ -27,7 +27,7 @@ void Init_link(struct Link *link)
 		malloc_failure();
 	link->head->str = malloc(sizeof(char));
 	if (link->head->str == NULL)
-		malloc_failure(); 
+		malloc_failure();
 	link->head->prev = NULL;
 	link->head->next = link->tail;
 	link->tail->str = malloc(sizeof(char));

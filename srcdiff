@@ -1,32 +1,39 @@
 diff --git a/shell/Link.c b/shell/Link.c
 new file mode 100644
-index 0000000..a224b74
+index 0000000..b3963ca
 --- /dev/null
 +++ b/shell/Link.c
-@@ -0,0 +1,124 @@
+@@ -0,0 +1,134 @@
 +#include <stdio.h>
 +#include <string.h>
 +#include <stdlib.h>
 +#include <errno.h>
 +#include "Link.h"
 +
++/*
++ * this is a commment
++ */
 +void malloc_failure(void)
 +{
 +	printf("error: %s\n", strerror(errno));
 +	exit(EXIT_FAILURE);
 +}
 +
++/*
++ * this is a commment
++ */
 +void Init_link(struct Link *link)
 +{
 +	link->head = malloc(sizeof(struct Node));
 +	if (link->head == NULL)
 +		malloc_failure();
++	/* this is a comment */
 +	link->tail = malloc(sizeof(struct Node));
 +	if (link->tail == NULL)
 +		malloc_failure();
 +	link->head->str = malloc(sizeof(char));
 +	if (link->head->str == NULL)
-+		malloc_failure();
++		malloc_failure(); 
 +	link->head->prev = NULL;
 +	link->head->next = link->tail;
 +	link->tail->str = malloc(sizeof(char));
@@ -37,6 +44,9 @@ index 0000000..a224b74
 +	link->num = 0;
 +}
 +
++/*
++ * this is a commment
++ */
 +int check_duplicate(struct Link *link, const char *str)
 +{
 +	struct Node *p = link->head;
@@ -184,10 +194,10 @@ index 0000000..4cee0a9
 +
 +#endif
 diff --git a/shell/shell.c b/shell/shell.c
-index 07b0fbf..5cafbb5 100644
+index 07b0fbf..31aaaa5 100644
 --- a/shell/shell.c
 +++ b/shell/shell.c
-@@ -1,3 +1,277 @@
+@@ -1,3 +1,275 @@
 -int main(int argc, char **argv) {
 -	return 0;
 +#include <stdio.h>
@@ -255,6 +265,7 @@ index 07b0fbf..5cafbb5 100644
 +int shell_execute(char **args, int num)
 +{
 +	int pid;
++	int return_code;
 +
 +	pid = fork();
 +	if (pid < 0) {
@@ -264,12 +275,9 @@ index 07b0fbf..5cafbb5 100644
 +	if (pid == 0) {
 +		search(args, num);
 +		return EXIT_LOOP;
-+	} else {
-+		int return_code;
-+
-+		while (pid != wait(&return_code)) {}
-+		return CONTINUE_LOOP;
-+	}
++	while (pid != wait(&return_code))
++		;
++	return CONTINUE_LOOP;
 +}
 +
 +void search(char **args, int num)
