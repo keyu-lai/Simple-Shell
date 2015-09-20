@@ -1,6 +1,6 @@
-#include <stdio.h>     
-#include <stdlib.h>   
-#include <unistd.h> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <linux/limits.h>
 #include <errno.h>
@@ -14,8 +14,8 @@ void shell_pwd(int num);
 void shell_cd(char **args, int num);
 void print_paths(void);
 void shell_path(char **args, int num);
-void search(char** args, int num);
-int shell_execute(char** args, int num);
+void search(char **args, int num);
+int shell_execute(char **args, int num);
 void print_history(void);
 void shell_history(char **args, int num);
 int shell_cmd(char *line);
@@ -25,22 +25,22 @@ Link paths;
 Link history;
 
 int main(int argc, char **argv)
-{ 
+{
 	char *line;
-	
+
 	Init_link(&paths);
 	Init_link(&history);
-		
-	while(1) {
+	
+	while (1) {
 		printf("$");
 		line = read_line();
-		if(shell_cmd(line))
+		if (shell_cmd(line))
 			break;
 	}
 
 	clear(&paths);
 	clear(&history);
-   	return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 }
 
 #define EXIT_LOOP 1
@@ -65,14 +65,14 @@ int shell_cmd(char *line)
 		shell_path(args, num);
 	else if (!strcmp(args[0], "history"))
 		shell_history(args, num);
-	else 
+	else
 		res = shell_execute(args, num);
 	free(line);
 	free(args);
 	return res;
 }
 
-int shell_execute(char** args, int num)
+int shell_execute(char **args, int num)
 {
 	int pid;
 
@@ -87,16 +87,17 @@ int shell_execute(char** args, int num)
 	}
 	else {
 		int return_code;
+
 		while (pid != wait(&return_code));
 		return CONTINUE_LOOP;
-	}	
+	}
 }
 
-void search(char** args, int num)
+void search(char **args, int num)
 {
 	char *exc_dir;
 	Node *p = paths.head;
-	
+
 	if (index(args[0], '/') != NULL) {
 		execv(args[0], args);
 		printf("error: %s\n", strerror(errno));
@@ -105,10 +106,11 @@ void search(char** args, int num)
 	if (size(&paths) == 0) {
 		printf("error: %s\n", "No such file or directory");
 		return;
-	}	
+	}
 	while ((p = p->next) != paths.tail) {
 		int dir_len = strlen(p->str) + strlen(args[0]) + 2;
-		if((exc_dir = malloc(dir_len * sizeof(char))) == NULL) 
+		exc_dir = malloc(dir_len * sizeof(char));
+		if(exc_dir == NULL)
 			malloc_failure();
 		strcpy(exc_dir, p->str);
 		if (exc_dir[strlen(exc_dir)-1] != '/')
@@ -117,7 +119,7 @@ void search(char** args, int num)
 		execv(exc_dir, args);
 		free(exc_dir);
 	}
-	printf("error: %s\n", strerror(errno));	
+	printf("error: %s\n", strerror(errno));
 }
 
 #define HISTORY_MAX 100
@@ -126,14 +128,13 @@ void print_history(void)
 	int i = 0;
 	Node *p = history.head;
 
-	while(size(&history) > HISTORY_MAX)
+	while (size(&history) > HISTORY_MAX)
 		delete_first(&history);
-	while ((p = p->next) != history.tail) {
+	while ((p = p->next) != history.tail)
 		printf("%d %s\n", i++, p->str);
-	}
 }
 
-void execute_his(const char* str)
+void execute_his(const char *str)
 {
 	char *line;
 
@@ -157,7 +158,7 @@ void shell_history(char **args, int num)
 	}
 	if (num > 2) {
 		printf("error: %s\n", "Invalid history command");
-		return;			
+		return;	
 	}
 	if (!strcmp(args[1], "-c")) {
 		clear(&history);
@@ -166,7 +167,7 @@ void shell_history(char **args, int num)
 	}
 	
 	for (i = 0; i < strlen(args[1]); ++i) {
-		if(args[1][i] > '9' || args[1][i] < '0') {
+		if (args[1][i] > '9' || args[1][i] < '0') {
 			printf("error: %s\n", "Invalid history command");
 			return;
 		}
@@ -174,7 +175,7 @@ void shell_history(char **args, int num)
 	his_num = atoi(args[1]);
 	if (his_num >= size(&history) || his_num >= HISTORY_MAX) {
 		printf("error: %s\n", "Invalid history command");
-		return;		
+		return;
 	}
 
 	p = history.head;
@@ -213,7 +214,7 @@ void shell_path(char **args, int num)
 	}
 
 	if (!strcmp(args[1], "+")) {
-		if (!check_duplicate(&paths, args[2]))		
+		if (!check_duplicate(&paths, args[2]))	
 			insert(&paths, args[2]);
 	} else if (!strcmp(args[1], "-"))
 		delete_str(&paths, args[2]);
@@ -224,17 +225,17 @@ void shell_path(char **args, int num)
 void shell_pwd(int num)
 {
 	char cwd[PATH_MAX];
-	
+
 	if (num > 1) {
-		printf("error: %s\n", "Invalid pwd command");	
+		printf("error: %s\n", "Invalid pwd command");
 		return;
 	}
 
 	if (getcwd(cwd, PATH_MAX) == NULL) {
 		printf("error: %s\n", strerror(errno));
-		return;	
-	} else 
-		printf("%s\n", cwd);
+		return;
+	}
+	printf("%s\n", cwd);
 }
 
 void shell_cd(char **args, int num)
@@ -253,7 +254,8 @@ void shell_cd(char **args, int num)
 char **parse_command(char *line, int *num, char *delim)
 {
 	char *arg;
-	char **args = malloc(MAX_ARG * sizeof(char*));
+	char **args = malloc(MAX_ARG * sizeof(char *));
+
 	if (args == NULL)
 		malloc_failure();
 	*num = 0;
@@ -273,6 +275,7 @@ char *read_line(void)
 {
 	char *line = NULL;
 	size_t len = 0;
+
 	if (getline(&line, &len, stdin) == -1) {
 		printf("error: %s\n", "Cannot read a line");
 		free(line);
@@ -280,7 +283,7 @@ char *read_line(void)
 	}
 	len = strlen(line);
 	if (line[len-1] == EOF || line[len-1] == '\n')
-		line[len-1] = '\0';		
+		line[len-1] = '\0';
 	return line;
 }
 

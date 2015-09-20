@@ -4,15 +4,13 @@
 typedef struct Node Node;
 typedef struct Link Link;
 
-struct Node
-{
+struct Node {
 	char *str;
 	Node *prev;
 	Node *next;
 };
 
-struct Link
-{
+struct Link {
 	Node *head;
 	Node *tail;
 	int num;
