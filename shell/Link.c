@@ -10,12 +10,12 @@ void malloc_failure(void)
 	exit(EXIT_FAILURE);	
 }
 
-void Init_link(Link *link)
+void Init_link(struct Link *link)
 {
-	link->head = malloc(sizeof(Node));
+	link->head = malloc(sizeof(struct Node));
 	if (link->head == NULL)
 		malloc_failure();
-	link->tail = malloc(sizeof(Node));
+	link->tail = malloc(sizeof(struct Node));
 	if (link->tail == NULL)
 		malloc_failure();
 	link->head->str = malloc(sizeof(char));
@@ -31,9 +31,9 @@ void Init_link(Link *link)
 	link->num = 0;
 }
 
-int check_duplicate(Link *link, const char *str)
+int check_duplicate(struct Link *link, const char *str)
 {
-	Node *p = link->head;
+	struct Node *p = link->head;
 
 	while ((p = p->next) != link->tail) {
 		if (!strcmp(p->str, str))
@@ -42,11 +42,11 @@ int check_duplicate(Link *link, const char *str)
 	return 0;
 }
 
-void insert(Link *link, const char *str)
+void insert(struct Link *link, const char *str)
 {
-	Node *p = link->tail->prev;
+	struct Node *p = link->tail->prev;
 
-	link->tail->prev = malloc(sizeof(Node));
+	link->tail->prev = malloc(sizeof(struct Node));
 	if (link->tail->prev == NULL)
 		malloc_failure();
 	link->tail->prev->str = malloc((strlen(str) + 1) * sizeof(char));
@@ -59,10 +59,10 @@ void insert(Link *link, const char *str)
 	++(link->num);
 }
 
-void delete_str(Link *link, const char *str)
+void delete_str(struct Link *link, const char *str)
 {
-	Node *p = link->head;
-	Node *tmp;
+	struct Node *p = link->head;
+	struct Node *tmp;
 
 	while ((p = p->next) != link->tail) {
 		if (!strcmp(p->str, str)) {
@@ -77,9 +77,9 @@ void delete_str(Link *link, const char *str)
 	}
 }
 
-void delete_last(Link *link)
+void delete_last(struct Link *link)
 {
-	Node *p = link->tail->prev;
+	struct Node *p = link->tail->prev;
 
 	if (p == link->head)
 		return;
@@ -90,9 +90,9 @@ void delete_last(Link *link)
 	--(link->num);
 }
 
-void delete_first(Link *link)
+void delete_first(struct Link *link)
 {
-	Node *tmp = link->head->next;
+	struct Node *tmp = link->head->next;
 
 	if (tmp == link->tail)
 		return;
@@ -103,10 +103,10 @@ void delete_first(Link *link)
 	--(link->num);
 }
 
-void clear(Link *link)
+void clear(struct Link *link)
 {
-	Node *p = link->head;
-	Node *tmp;
+	struct Node *p = link->head;
+	struct Node *tmp;
 
 	while (p != NULL) {
 		tmp = p->next;
@@ -117,7 +117,7 @@ void clear(Link *link)
 	link->num = 0;
 }
 
-int size(Link *link)
+int size(struct Link *link)
 {
 	return link->num;
 }

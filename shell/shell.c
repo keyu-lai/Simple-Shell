@@ -21,8 +21,8 @@ void shell_history(char **args, int num);
 int shell_cmd(char *line);
 void execute_his(const char* str);
 
-Link paths;
-Link history;
+struct Link paths;
+struct Link history;
 
 int main(int argc, char **argv)
 {
@@ -96,7 +96,7 @@ int shell_execute(char **args, int num)
 void search(char **args, int num)
 {
 	char *exc_dir;
-	Node *p = paths.head;
+	struct Node *p = paths.head;
 
 	if (index(args[0], '/') != NULL) {
 		execv(args[0], args);
@@ -126,7 +126,7 @@ void search(char **args, int num)
 void print_history(void)
 {
 	int i = 0;
-	Node *p = history.head;
+	struct Node *p = history.head;
 
 	while (size(&history) > HISTORY_MAX)
 		delete_first(&history);
@@ -149,7 +149,7 @@ void shell_history(char **args, int num)
 {
 	int i;
 	int his_num;
-	Node *p;
+	struct Node *p;
 
 	delete_last(&history);
 	if (num == 1) {
@@ -189,7 +189,7 @@ void shell_history(char **args, int num)
 
 void print_paths(void)
 {
-	Node *p = paths.head->next;
+	struct Node *p = paths.head->next;
 
 	if (p == paths.tail) {
 		printf("\n");
