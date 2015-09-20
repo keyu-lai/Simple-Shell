@@ -1,6 +1,6 @@
 diff --git a/shell/Link.c b/shell/Link.c
 new file mode 100644
-index 0000000..b3963ca
+index 0000000..facc589
 --- /dev/null
 +++ b/shell/Link.c
 @@ -0,0 +1,134 @@
@@ -33,7 +33,7 @@ index 0000000..b3963ca
 +		malloc_failure();
 +	link->head->str = malloc(sizeof(char));
 +	if (link->head->str == NULL)
-+		malloc_failure(); 
++		malloc_failure();
 +	link->head->prev = NULL;
 +	link->head->next = link->tail;
 +	link->tail->str = malloc(sizeof(char));

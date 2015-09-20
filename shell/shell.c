@@ -9,6 +9,7 @@
 #include "Link.h"
 #include "Shell.h"
 
+/* Doubly linked list is used to store paths and history. */
 struct Link paths;
 struct Link history;
 
@@ -31,6 +32,11 @@ int main(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
+/* 
+ * Function Used in while loop to parse a command.
+ * If it returns EXIT_LOOP, the loop would break.
+ * If it returns CONTINUE_LOOP, the loop would keep going.
+ */
 #define EXIT_LOOP 1
 #define CONTINUE_LOOP 0
 int shell_cmd(char *line)
@@ -60,6 +66,12 @@ int shell_cmd(char *line)
 	return res;
 }
 
+/* 
+ * Main function used to run a executable.
+ * fork() is invoked. In the child process,
+ * it uses search() to find the executable, then break the loop.
+ * In the parent process, it just wait for the child to finish.
+ */
 int shell_execute(char **args, int num)
 {
 	int pid;
@@ -73,16 +85,19 @@ int shell_execute(char **args, int num)
 	if (pid == 0) {
 		search(args, num);
 		return EXIT_LOOP;
+	}
 	while (pid != wait(&return_code))
 		;
 	return CONTINUE_LOOP;
 }
 
+/* Function used to search for the excutable in the paths we stored. */
 void search(char **args, int num)
 {
 	char *exc_dir;
 	struct Node *p = paths.head;
 
+	/* If an executable has a path, we just run it using execv(). */
 	if (index(args[0], '/') != NULL) {
 		execv(args[0], args);
 		printf("error: %s\n", strerror(errno));
@@ -92,6 +107,10 @@ void search(char **args, int num)
 		printf("error: %s\n", "No such file or directory");
 		return;
 	}
+	/* 
+	 * If it isn't associated with a path, we would search in paths we store.
+	 * Since paths are stored in a linked list, an iterative process is used.
+	 */
 	while ((p = p->next) != paths.tail) {
 		int dir_len = strlen(p->str) + strlen(args[0]) + 2;
 
@@ -108,36 +127,17 @@ void search(char **args, int num)
 	printf("error: %s\n", strerror(errno));
 }
 
+/* Main function for the history command. */
 #define HISTORY_MAX 100
-void print_history(void)
-{
-	int i = 0;
-	struct Node *p = history.head;
-
-	while (size(&history) > HISTORY_MAX)
-		delete_first(&history);
-	while ((p = p->next) != history.tail)
-		printf("%d %s\n", i++, p->str);
-}
-
-void execute_his(const char *str)
-{
-	char *line;
-
-	line = malloc((strlen(str) + 1) * sizeof(char));
-	if (line == NULL)
-		malloc_failure();
-	strcpy(line, str);
-	shell_cmd(line);
-}
-
 void shell_history(char **args, int num)
 {
 	int i;
 	int his_num;
 	struct Node *p;
 
+	/* History commands don't need to be stored. */
 	delete_last(&history);
+	/* Print out the whole history. */
 	if (num == 1) {
 		print_history();
 		return;
@@ -146,24 +146,27 @@ void shell_history(char **args, int num)
 		printf("error: %s\n", "Invalid history command");
 		return;
 	}
+	/* Clear all history. */
 	if (!strcmp(args[1], "-c")) {
 		clear(&history);
 		Init_link(&history);
 		return;
 	}
 
+	/* Check if the history offset is numerical. */
 	for (i = 0; i < strlen(args[1]); ++i) {
 		if (args[1][i] > '9' || args[1][i] < '0') {
 			printf("error: %s\n", "Invalid history command");
 			return;
 		}
 	}
+	/* Check if the history offset overflows. */
 	his_num = atoi(args[1]);
 	if (his_num >= size(&history) || his_num >= HISTORY_MAX) {
 		printf("error: %s\n", "Invalid history command");
 		return;
 	}
-
+	/* An iterative process is used to search a linked list. */
 	p = history.head;
 	while ((p = p->next) != history.tail) {
 		if (--his_num < 0) {
@@ -173,22 +176,37 @@ void shell_history(char **args, int num)
 	}
 }
 
-void print_paths(void)
+/* Function used to print out the whole hisotry. */
+void print_history(void)
 {
-	struct Node *p = paths.head->next;
+	int i = 0;
+	struct Node *p = history.head;
 
-	if (p == paths.tail) {
-		printf("\n");
-		return;
-	}
-	printf("%s", p->str);
-	while ((p = p->next) != paths.tail)
-		printf(":%s", p->str);
-	printf("\n");
+	/* No more than 100 historie stored. */
+	while (size(&history) > HISTORY_MAX)
+		delete_first(&history);
+	/* An iterative process is used to print out a linked list. */
+	while ((p = p->next) != history.tail)
+		printf("%d %s\n", i++, p->str);
 }
 
+/* Function used to execute a command stored in the hisotry. */
+void execute_his(const char *str)
+{
+	char *line;
+
+	/* line will be freed in the shell_cmd() function. */
+	line = malloc((strlen(str) + 1) * sizeof(char));
+	if (line == NULL)
+		malloc_failure();
+	strcpy(line, str);
+	shell_cmd(line);
+}
+
+/* Main function for the path command. */
 void shell_path(char **args, int num)
 {
+	/* Print out all the paths. */
 	if (num == 1) {
 		print_paths();
 		return;
@@ -199,14 +217,36 @@ void shell_path(char **args, int num)
 	}
 
 	if (!strcmp(args[1], "+")) {
-		if (!check_duplicate(&paths, args[2]))
-			insert(&paths, args[2]);
+		/* Relative path should not be stored. */
+		if (args[2][0] == '/') {
+			/* Check for duplicate. */
+			if (!check_duplicate(&paths, args[2]))
+				insert(&paths, args[2]);
+		} else
+			printf("error: %s\n", "Invalid path command");
 	} else if (!strcmp(args[1], "-"))
 		delete_str(&paths, args[2]);
 	else
 		printf("error: %s\n", "Invalid path command");
 }
 
+/* Function used to print out all the paths. */
+void print_paths(void)
+{
+	struct Node *p = paths.head->next;
+
+	if (p == paths.tail) {
+		printf("\n");
+		return;
+	}
+	/* An iterative process is used to print out a linked list. */
+	printf("%s", p->str);
+	while ((p = p->next) != paths.tail)
+		printf(":%s", p->str);
+	printf("\n");
+}
+
+/* Main function for the pwd command. */
 void shell_pwd(int num)
 {
 	char cwd[PATH_MAX];
@@ -215,7 +255,6 @@ void shell_pwd(int num)
 		printf("error: %s\n", "Invalid pwd command");
 		return;
 	}
-
 	if (getcwd(cwd, PATH_MAX) == NULL) {
 		printf("error: %s\n", strerror(errno));
 		return;
@@ -223,6 +262,7 @@ void shell_pwd(int num)
 	printf("%s\n", cwd);
 }
 
+/* Main function for the cd command. */
 void shell_cd(char **args, int num)
 {
 	if (num != 2) {
@@ -235,15 +275,21 @@ void shell_cd(char **args, int num)
 	}
 }
 
+/* 
+ * Function used to extract tokens from a command line.
+ * num is number of input arguments. It should not be more than 128.
+ */
 #define MAX_ARG 128
 char **parse_command(char *line, int *num, char *delim)
 {
+	/* args will be freed in sehll_cmd(). */
 	char *arg;
 	char **args = malloc(MAX_ARG * sizeof(char *));
 
 	if (args == NULL)
 		malloc_failure();
 	*num = 0;
+	/* strtok() is used to extract tokens from strings. */
 	arg = strtok(line, delim);
 	for (; arg != NULL; arg = strtok(NULL, delim)) {
 		args[(*num)++] = arg;
@@ -256,6 +302,7 @@ char **parse_command(char *line, int *num, char *delim)
 	return args;
 }
 
+/* Read a line and store it. */
 char *read_line(void)
 {
 	char *line = NULL;

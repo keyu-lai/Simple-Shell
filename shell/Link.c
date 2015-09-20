@@ -4,24 +4,19 @@
 #include <errno.h>
 #include "Link.h"
 
-/*
- * this is a commment
- */
+/* print out error message and exit when malloc() fails. */
 void malloc_failure(void)
 {
 	printf("error: %s\n", strerror(errno));
 	exit(EXIT_FAILURE);
 }
 
-/*
- * this is a commment
- */
+/* Initiate a doubly linked list. */
 void Init_link(struct Link *link)
 {
 	link->head = malloc(sizeof(struct Node));
 	if (link->head == NULL)
 		malloc_failure();
-	/* this is a comment */
 	link->tail = malloc(sizeof(struct Node));
 	if (link->tail == NULL)
 		malloc_failure();
@@ -38,9 +33,7 @@ void Init_link(struct Link *link)
 	link->num = 0;
 }
 
-/*
- * this is a commment
- */
+/* If a string exists in the linked list, then return 1. */
 int check_duplicate(struct Link *link, const char *str)
 {
 	struct Node *p = link->head;
@@ -52,6 +45,7 @@ int check_duplicate(struct Link *link, const char *str)
 	return 0;
 }
 
+/* Insert a string after the last element. */
 void insert(struct Link *link, const char *str)
 {
 	struct Node *p = link->tail->prev;
@@ -69,6 +63,10 @@ void insert(struct Link *link, const char *str)
 	++(link->num);
 }
 
+/* 
+ * If a string is found in the linked list, then delete it.
+ * Otherwise, do nothing.
+ */
 void delete_str(struct Link *link, const char *str)
 {
 	struct Node *p = link->head;
@@ -87,6 +85,7 @@ void delete_str(struct Link *link, const char *str)
 	}
 }
 
+/* Delete the last node of a linked list if it exists. */
 void delete_last(struct Link *link)
 {
 	struct Node *p = link->tail->prev;
@@ -100,6 +99,7 @@ void delete_last(struct Link *link)
 	--(link->num);
 }
 
+/* Delete the first node of a linked list if it exists. */
 void delete_first(struct Link *link)
 {
 	struct Node *tmp = link->head->next;
@@ -113,6 +113,7 @@ void delete_first(struct Link *link)
 	--(link->num);
 }
 
+/* Reclaim all the space dynamically allocated. */
 void clear(struct Link *link)
 {
 	struct Node *p = link->head;
@@ -127,6 +128,7 @@ void clear(struct Link *link)
 	link->num = 0;
 }
 
+/* Return the size of a linked list. */
 int size(struct Link *link)
 {
 	return link->num;
