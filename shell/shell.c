@@ -63,6 +63,7 @@ int shell_cmd(char *line)
 int shell_execute(char **args, int num)
 {
 	int pid;
+	int return_code;
 
 	pid = fork();
 	if (pid < 0) {
@@ -72,12 +73,9 @@ int shell_execute(char **args, int num)
 	if (pid == 0) {
 		search(args, num);
 		return EXIT_LOOP;
-	} else {
-		int return_code;
-
-		while (pid != wait(&return_code)) {}
-		return CONTINUE_LOOP;
-	}
+	while (pid != wait(&return_code))
+		;
+	return CONTINUE_LOOP;
 }
 
 void search(char **args, int num)

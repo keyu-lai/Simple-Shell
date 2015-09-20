@@ -4,23 +4,30 @@
 #include <errno.h>
 #include "Link.h"
 
+/*
+ * this is a commment
+ */
 void malloc_failure(void)
 {
 	printf("error: %s\n", strerror(errno));
 	exit(EXIT_FAILURE);
 }
 
+/*
+ * this is a commment
+ */
 void Init_link(struct Link *link)
 {
 	link->head = malloc(sizeof(struct Node));
 	if (link->head == NULL)
 		malloc_failure();
+	/* this is a comment */
 	link->tail = malloc(sizeof(struct Node));
 	if (link->tail == NULL)
 		malloc_failure();
 	link->head->str = malloc(sizeof(char));
 	if (link->head->str == NULL)
-		malloc_failure();
+		malloc_failure(); 
 	link->head->prev = NULL;
 	link->head->next = link->tail;
 	link->tail->str = malloc(sizeof(char));
@@ -31,6 +38,9 @@ void Init_link(struct Link *link)
 	link->num = 0;
 }
 
+/*
+ * this is a commment
+ */
 int check_duplicate(struct Link *link, const char *str)
 {
 	struct Node *p = link->head;
