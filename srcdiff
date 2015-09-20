@@ -1,33 +1,28 @@
 diff --git a/shell/Link.c b/shell/Link.c
 new file mode 100644
-index 0000000..facc589
+index 0000000..adb6a32
 --- /dev/null
 +++ b/shell/Link.c
-@@ -0,0 +1,134 @@
+@@ -0,0 +1,136 @@
 +#include <stdio.h>
 +#include <string.h>
 +#include <stdlib.h>
 +#include <errno.h>
 +#include "Link.h"
 +
-+/*
-+ * this is a commment
-+ */
++/* print out error message and exit when malloc() fails. */
 +void malloc_failure(void)
 +{
 +	printf("error: %s\n", strerror(errno));
 +	exit(EXIT_FAILURE);
 +}
 +
-+/*
-+ * this is a commment
-+ */
++/* Initiate a doubly linked list. */
 +void Init_link(struct Link *link)
 +{
 +	link->head = malloc(sizeof(struct Node));
 +	if (link->head == NULL)
 +		malloc_failure();
-+	/* this is a comment */
 +	link->tail = malloc(sizeof(struct Node));
 +	if (link->tail == NULL)
 +		malloc_failure();
@@ -44,9 +39,7 @@ index 0000000..facc589
 +	link->num = 0;
 +}
 +
-+/*
-+ * this is a commment
-+ */
++/* If a string exists in the linked list, then return 1. */
 +int check_duplicate(struct Link *link, const char *str)
 +{
 +	struct Node *p = link->head;
@@ -58,6 +51,7 @@ index 0000000..facc589
 +	return 0;
 +}
 +
++/* Insert a string after the last element. */
 +void insert(struct Link *link, const char *str)
 +{
 +	struct Node *p = link->tail->prev;
@@ -75,6 +69,10 @@ index 0000000..facc589
 +	++(link->num);
 +}
 +
++/* 
++ * If a string is found in the linked list, then delete it.
++ * Otherwise, do nothing.
++ */
 +void delete_str(struct Link *link, const char *str)
 +{
 +	struct Node *p = link->head;
@@ -93,6 +91,7 @@ index 0000000..facc589
 +	}
 +}
 +
++/* Delete the last node of a linked list if it exists. */
 +void delete_last(struct Link *link)
 +{
 +	struct Node *p = link->tail->prev;
@@ -106,6 +105,7 @@ index 0000000..facc589
 +	--(link->num);
 +}
 +
++/* Delete the first node of a linked list if it exists. */
 +void delete_first(struct Link *link)
 +{
 +	struct Node *tmp = link->head->next;
@@ -119,6 +119,7 @@ index 0000000..facc589
 +	--(link->num);
 +}
 +
++/* Reclaim all the space dynamically allocated. */
 +void clear(struct Link *link)
 +{
 +	struct Node *p = link->head;
@@ -133,6 +134,7 @@ index 0000000..facc589
 +	link->num = 0;
 +}
 +
++/* Return the size of a linked list. */
 +int size(struct Link *link)
 +{
 +	return link->num;
@@ -194,10 +196,10 @@ index 0000000..4cee0a9
 +
 +#endif
 diff --git a/shell/shell.c b/shell/shell.c
-index 07b0fbf..31aaaa5 100644
+index 07b0fbf..b49f0f7 100644
 --- a/shell/shell.c
 +++ b/shell/shell.c
-@@ -1,3 +1,275 @@
+@@ -1,3 +1,322 @@
 -int main(int argc, char **argv) {
 -	return 0;
 +#include <stdio.h>
@@ -211,6 +213,7 @@ index 07b0fbf..31aaaa5 100644
 +#include "Link.h"
 +#include "Shell.h"
 +
++/* Doubly linked list is used to store paths and history. */
 +struct Link paths;
 +struct Link history;
 +
@@ -233,6 +236,11 @@ index 07b0fbf..31aaaa5 100644
 +	return EXIT_SUCCESS;
  }
 +
++/* 
++ * Function Used in while loop to parse a command.
++ * If it returns EXIT_LOOP, the loop would break.
++ * If it returns CONTINUE_LOOP, the loop would keep going.
++ */
 +#define EXIT_LOOP 1
 +#define CONTINUE_LOOP 0
 +int shell_cmd(char *line)
@@ -262,6 +270,12 @@ index 07b0fbf..31aaaa5 100644
 +	return res;
 +}
 +
++/* 
++ * Main function used to run a executable.
++ * fork() is invoked. In the child process,
++ * it uses search() to find the executable, then break the loop.
++ * In the parent process, it just wait for the child to finish.
++ */
 +int shell_execute(char **args, int num)
 +{
 +	int pid;
@@ -275,16 +289,19 @@ index 07b0fbf..31aaaa5 100644
 +	if (pid == 0) {
 +		search(args, num);
 +		return EXIT_LOOP;
++	}
 +	while (pid != wait(&return_code))
 +		;
 +	return CONTINUE_LOOP;
 +}
 +
++/* Function used to search for the excutable in the paths we stored. */
 +void search(char **args, int num)
 +{
 +	char *exc_dir;
 +	struct Node *p = paths.head;
 +
++	/* If an executable has a path, we just run it using execv(). */
 +	if (index(args[0], '/') != NULL) {
 +		execv(args[0], args);
 +		printf("error: %s\n", strerror(errno));
@@ -294,6 +311,10 @@ index 07b0fbf..31aaaa5 100644
 +		printf("error: %s\n", "No such file or directory");
 +		return;
 +	}
++	/* 
++	 * If it isn't associated with a path, we would search in paths we store.
++	 * Since paths are stored in a linked list, an iterative process is used.
++	 */
 +	while ((p = p->next) != paths.tail) {
 +		int dir_len = strlen(p->str) + strlen(args[0]) + 2;
 +
@@ -310,36 +331,17 @@ index 07b0fbf..31aaaa5 100644
 +	printf("error: %s\n", strerror(errno));
 +}
 +
++/* Main function for the history command. */
 +#define HISTORY_MAX 100
-+void print_history(void)
-+{
-+	int i = 0;
-+	struct Node *p = history.head;
-+
-+	while (size(&history) > HISTORY_MAX)
-+		delete_first(&history);
-+	while ((p = p->next) != history.tail)
-+		printf("%d %s\n", i++, p->str);
-+}
-+
-+void execute_his(const char *str)
-+{
-+	char *line;
-+
-+	line = malloc((strlen(str) + 1) * sizeof(char));
-+	if (line == NULL)
-+		malloc_failure();
-+	strcpy(line, str);
-+	shell_cmd(line);
-+}
-+
 +void shell_history(char **args, int num)
 +{
 +	int i;
 +	int his_num;
 +	struct Node *p;
 +
++	/* History commands don't need to be stored. */
 +	delete_last(&history);
++	/* Print out the whole history. */
 +	if (num == 1) {
 +		print_history();
 +		return;
@@ -348,24 +350,27 @@ index 07b0fbf..31aaaa5 100644
 +		printf("error: %s\n", "Invalid history command");
 +		return;
 +	}
++	/* Clear all history. */
 +	if (!strcmp(args[1], "-c")) {
 +		clear(&history);
 +		Init_link(&history);
 +		return;
 +	}
 +
++	/* Check if the history offset is numerical. */
 +	for (i = 0; i < strlen(args[1]); ++i) {
 +		if (args[1][i] > '9' || args[1][i] < '0') {
 +			printf("error: %s\n", "Invalid history command");
 +			return;
 +		}
 +	}
++	/* Check if the history offset overflows. */
 +	his_num = atoi(args[1]);
 +	if (his_num >= size(&history) || his_num >= HISTORY_MAX) {
 +		printf("error: %s\n", "Invalid history command");
 +		return;
 +	}
-+
++	/* An iterative process is used to search a linked list. */
 +	p = history.head;
 +	while ((p = p->next) != history.tail) {
 +		if (--his_num < 0) {
@@ -375,22 +380,37 @@ index 07b0fbf..31aaaa5 100644
 +	}
 +}
 +
-+void print_paths(void)
++/* Function used to print out the whole hisotry. */
++void print_history(void)
 +{
-+	struct Node *p = paths.head->next;
++	int i = 0;
++	struct Node *p = history.head;
 +
-+	if (p == paths.tail) {
-+		printf("\n");
-+		return;
-+	}
-+	printf("%s", p->str);
-+	while ((p = p->next) != paths.tail)
-+		printf(":%s", p->str);
-+	printf("\n");
++	/* No more than 100 historie stored. */
++	while (size(&history) > HISTORY_MAX)
++		delete_first(&history);
++	/* An iterative process is used to print out a linked list. */
++	while ((p = p->next) != history.tail)
++		printf("%d %s\n", i++, p->str);
 +}
 +
++/* Function used to execute a command stored in the hisotry. */
++void execute_his(const char *str)
++{
++	char *line;
++
++	/* line will be freed in the shell_cmd() function. */
++	line = malloc((strlen(str) + 1) * sizeof(char));
++	if (line == NULL)
++		malloc_failure();
++	strcpy(line, str);
++	shell_cmd(line);
++}
++
++/* Main function for the path command. */
 +void shell_path(char **args, int num)
 +{
++	/* Print out all the paths. */
 +	if (num == 1) {
 +		print_paths();
 +		return;
@@ -401,14 +421,36 @@ index 07b0fbf..31aaaa5 100644
 +	}
 +
 +	if (!strcmp(args[1], "+")) {
-+		if (!check_duplicate(&paths, args[2]))
-+			insert(&paths, args[2]);
++		/* Relative path should not be stored. */
++		if (args[2][0] == '/') {
++			/* Check for duplicate. */
++			if (!check_duplicate(&paths, args[2]))
++				insert(&paths, args[2]);
++		} else
++			printf("error: %s\n", "Invalid path command");
 +	} else if (!strcmp(args[1], "-"))
 +		delete_str(&paths, args[2]);
 +	else
 +		printf("error: %s\n", "Invalid path command");
 +}
 +
++/* Function used to print out all the paths. */
++void print_paths(void)
++{
++	struct Node *p = paths.head->next;
++
++	if (p == paths.tail) {
++		printf("\n");
++		return;
++	}
++	/* An iterative process is used to print out a linked list. */
++	printf("%s", p->str);
++	while ((p = p->next) != paths.tail)
++		printf(":%s", p->str);
++	printf("\n");
++}
++
++/* Main function for the pwd command. */
 +void shell_pwd(int num)
 +{
 +	char cwd[PATH_MAX];
@@ -417,7 +459,6 @@ index 07b0fbf..31aaaa5 100644
 +		printf("error: %s\n", "Invalid pwd command");
 +		return;
 +	}
-+
 +	if (getcwd(cwd, PATH_MAX) == NULL) {
 +		printf("error: %s\n", strerror(errno));
 +		return;
@@ -425,6 +466,7 @@ index 07b0fbf..31aaaa5 100644
 +	printf("%s\n", cwd);
 +}
 +
++/* Main function for the cd command. */
 +void shell_cd(char **args, int num)
 +{
 +	if (num != 2) {
@@ -437,15 +479,21 @@ index 07b0fbf..31aaaa5 100644
 +	}
 +}
 +
++/* 
++ * Function used to extract tokens from a command line.
++ * num is number of input arguments. It should not be more than 128.
++ */
 +#define MAX_ARG 128
 +char **parse_command(char *line, int *num, char *delim)
 +{
++	/* args will be freed in sehll_cmd(). */
 +	char *arg;
 +	char **args = malloc(MAX_ARG * sizeof(char *));
 +
 +	if (args == NULL)
 +		malloc_failure();
 +	*num = 0;
++	/* strtok() is used to extract tokens from strings. */
 +	arg = strtok(line, delim);
 +	for (; arg != NULL; arg = strtok(NULL, delim)) {
 +		args[(*num)++] = arg;
@@ -458,6 +506,7 @@ index 07b0fbf..31aaaa5 100644
 +	return args;
 +}
 +
++/* Read a line and store it. */
 +char *read_line(void)
 +{
 +	char *line = NULL;

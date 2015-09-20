@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-/* 
+/*
  * Function Used in while loop to parse a command.
  * If it returns EXIT_LOOP, the loop would break.
  * If it returns CONTINUE_LOOP, the loop would keep going.
@@ -66,7 +66,7 @@ int shell_cmd(char *line)
 	return res;
 }
 
-/* 
+/*
  * Main function used to run a executable.
  * fork() is invoked. In the child process,
  * it uses search() to find the executable, then break the loop.
@@ -107,9 +107,9 @@ void search(char **args, int num)
 		printf("error: %s\n", "No such file or directory");
 		return;
 	}
-	/* 
-	 * If it isn't associated with a path, we would search in paths we store.
-	 * Since paths are stored in a linked list, an iterative process is used.
+	/*
+	 * If it don't have a path, we would search for it in paths.
+	 * An iterative process is used to search in a linked list.
 	 */
 	while ((p = p->next) != paths.tail) {
 		int dir_len = strlen(p->str) + strlen(args[0]) + 2;
@@ -275,7 +275,7 @@ void shell_cd(char **args, int num)
 	}
 }
 
-/* 
+/*
  * Function used to extract tokens from a command line.
  * num is number of input arguments. It should not be more than 128.
  */

@@ -63,7 +63,7 @@ void insert(struct Link *link, const char *str)
 	++(link->num);
 }
 
-/* 
+/*
  * If a string is found in the linked list, then delete it.
  * Otherwise, do nothing.
  */
