@@ -13,7 +13,7 @@ The purpose of interrupt is to signal the occurrence of an event and transfer ex
 It is possible: This can be achieved by software. The programming should do some security checking that the hardware miss, and build it into the software.
 It¡¯s not possible: The computer designate some machine potentially harmful instructions as privileged instructions and allow them to be executed only in privileged mode. Without the existence of privileged mode, we can not accomplish this protection. For example, a user program may wipe out the operating system, or multiple programs can write to a device at the same time.
 
-1. 29 Describe some of the challenges of designing operating systems for mobile devices compared with designing operating systems for traditional PCs.
+1.29 Describe some of the challenges of designing operating systems for mobile devices compared with designing operating systems for traditional PCs.
 
 a. Compared with laptop computers, The memory capacity and processing speed of mobile devices are more limited.
 b. It should support some services unique to mobile devices, such as GPS, accelerometers and gyroscopes. 
@@ -27,14 +27,19 @@ a. Parameters are passed in registers.
 b. Parameters are stored in a block or table in memory, and the address of the block is passed in a register.
 c. Parameters can be placed or pushed, onto the stack by the program and popped off the stack by the operating system.
 
-2.16 What are the advantages and disadvantages of using the same system-call interface for manipulating both files and devices?
+2.16 What are the advantages and disadvantages of using the same system-call interface for manipulating both files and devices?[1]
 
-
+Advantages: Since I/O device and files use same system call. This would benefit user program developers. They could uses same codes to handle them in same manner. It would simplify their works. Furthermore, I/O devices can be identified as though it was a file in the file system. Adding a new device driver would be easier by using hardware-specific code to support the file system.
+Disadvantages: If file system was used to handle I/O device, sometimes the API can not support the functionality of certain devices. It would result in a loss in functionality or a loss in performance.
 
 2.23 How are iOS and Android similar? How are they different?
+
 Difference: iOS is designed to run solely on Apple mobile devices and is close-sourced, while Android is designed to run on multiple mobile platforms and is open-sourced.
 Similarity: They are both operating system for mobile platform. Their structures are similar, a layered stack of software that provides a set of frameworks for developing mobile applications.
 
 2.24 Explain why Java programs running on Android systems do not use the standard Java API and virtual machine.
 
-Because they are designed for traditional computer system. The Java API and virtual machine that Android uses is optimized for mobile devices with limited memory and CPU processing capabilities.
+Because they are designed for traditional computer system. The Java API and virtual machine that Android uses is optimised for mobile devices with limited memory and CPU processing capabilities.
+
+REFERENCE
+[1]NETS3304/3604 Operating Systems Tutorial 2, http://sydney.edu.au/engineering/it/~nets3304/TUTORIALS/tut2Ans.pdf

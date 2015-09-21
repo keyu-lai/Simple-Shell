@@ -2,7 +2,7 @@ INSTRUCTION:
 
 The source code of this shell includes two parts: main process(shell.c and shell.h) and linked list(Link.c and Link.h). The first part is in control of the whole program and decides which function to be called when a command is entered. The second part implement the data structure ＾doubly linked list￣. It is used to store history commands and an built-in environment variable ！- paths.  
 
-Basically, the main function is a while loop. In every loop, it will wait for an input, compare it with the built-in commands and decide which function to be called. Its function can be divided in to two parts: runs a valid executable or implements five built-in commands: exit, cd, pwd, path, history. 
+Basically, the main function is a while loop. In every loop, it will wait for an input, compare it with the built-in commands and decide which function to be called. Its function can be divided in to two parts: runs a valid executable or implements five built-in commands ！- exit, cd, pwd, path, history. 
 
 We assume that an error that cause an overall disfunction would force the shell to end(e.g. Failure to allocate space for storing paths). Otherwise, it would continue to wait for the next input.
 
@@ -26,7 +26,130 @@ Path command is stored in a doubly linked list. A relative path and exact duplic
 
 History command is also stored in a doubly linked list we created. Any history command will not be stored. If a valid offset is provided, we would look for that specific command, execute it again and store it. The maximum number of history commands stored is 100. 
 
+TEST:
 
+$path
 
-
-
+$ls
+error: No such file or directory
+$path + /bin
+$path
+/bin
+$ls -l 
+total 64
+-rw-r！r！- 1 w4118 w4118  2846 Sep 21 10:01 Link.c
+-rw-r！r！- 1 w4118 w4118   533 Sep 21 10:01 Link.h
+-rw-r！r！- 1 w4118 w4118  4360 Sep 21 10:02 Link.o
+-rw-r！r！- 1 w4118 w4118   257 Sep 21 10:01 Makefile
+-rw-r！r！- 1 w4118 w4118  2908 Sep 21 10:01 README
+-rw-r！r！- 1 w4118 w4118  7238 Sep 21 10:01 shell.c
+-rw-r！r！- 1 w4118 w4118   454 Sep 21 10:01 Shell.h
+-rw-r！r！- 1 w4118 w4118 10808 Sep 21 10:02 shell.o
+-rw-r！r！- 1 w4118 w4118 15344 Sep 21 10:02 w4118_sh
+$./ls
+error: No such file or directory
+$  &*&
+error: No such file or directory
+$path + /bin/
+$path
+/bin:/bin/
+$path - /bin
+$path
+/bin/
+$path - /bin
+error: No such a directory
+$path + /bin/
+error: Relative path or duplicate
+$path + Desktop/
+error: Relative path or duplicate
+$path + /home/w4118
+$path + /home/w4118/shell
+$path
+/bin/:/home/w4118:/home/w4118/shell
+$pwd
+/home/w4118/shell
+$pwd df
+error: Invalid pwd command
+$cd ..
+$pwd
+/home/w4118
+$cd /home/w4118/shell
+$pwd
+/home/w4118/shell
+$cd
+error: Invalid cd command
+$cd /sdfd/sdfd
+error: No such file or directory
+$cd sdfsd sdfs
+error: Invalid cd command
+$history
+0 ls
+1 path + /bin
+2 path
+3 ls -l
+4 ./ls
+5   &*&
+6 path + /bin/
+7 path
+8 path - /bin
+9 path
+10 path - /bin
+11 path + /bin/
+12 path + Desktop/
+13 path + /home/w4118
+14 path + /home/w4118/shell
+15 path
+16 pwd
+17 pwd df
+18 cd ..
+19 pwd
+20 cd /home/w4118/shell
+21 pwd
+22 cd
+23 cd /sdfd/sdfd
+24 cd sdfsd sdfs
+$history 3
+total 64
+-rw-r！r！- 1 w4118 w4118  2846 Sep 21 10:01 Link.c
+-rw-r！r！- 1 w4118 w4118   533 Sep 21 10:01 Link.h
+-rw-r！r！- 1 w4118 w4118  4360 Sep 21 10:02 Link.o
+-rw-r！r！- 1 w4118 w4118   257 Sep 21 10:01 Makefile
+-rw-r！r！- 1 w4118 w4118  2908 Sep 21 10:01 README
+-rw-r！r！- 1 w4118 w4118  7238 Sep 21 10:01 shell.c
+-rw-r！r！- 1 w4118 w4118   454 Sep 21 10:01 Shell.h
+-rw-r！r！- 1 w4118 w4118 10808 Sep 21 10:02 shell.o
+-rw-r！r！- 1 w4118 w4118 15344 Sep 21 10:02 w4118_sh
+$history
+0 ls
+1 path + /bin
+2 path
+3 ls -l
+4 ./ls
+5   &*&
+6 path + /bin/
+7 path
+8 path - /bin
+9 path
+10 path - /bin
+11 path + /bin/
+12 path + Desktop/
+13 path + /home/w4118
+14 path + /home/w4118/shell
+15 path
+16 pwd
+17 pwd df
+18 cd ..
+19 pwd
+20 cd /home/w4118/shell
+21 pwd
+22 cd
+23 cd /sdfd/sdfd
+24 cd sdfsd sdfs
+25 ls -l
+$history 26
+error: Invalid history command
+$history + /home
+error: Invalid history command
+$history -c
+$history
+$exit
