@@ -1,9 +1,9 @@
 diff --git a/shell/Link.c b/shell/Link.c
 new file mode 100644
-index 0000000..49ae375
+index 0000000..8e2f886
 --- /dev/null
 +++ b/shell/Link.c
-@@ -0,0 +1,136 @@
+@@ -0,0 +1,138 @@
 +#include <stdio.h>
 +#include <string.h>
 +#include <stdlib.h>
@@ -11,7 +11,7 @@ index 0000000..49ae375
 +#include "Link.h"
 +
 +/* print out error message and exit when malloc() fails. */
-+void malloc_failure(void)
++void alloc_failure(void)
 +{
 +	printf("error: %s\n", strerror(errno));
 +	exit(EXIT_FAILURE);
@@ -22,18 +22,18 @@ index 0000000..49ae375
 +{
 +	link->head = malloc(sizeof(struct Node));
 +	if (link->head == NULL)
-+		malloc_failure();
++		alloc_failure();
 +	link->tail = malloc(sizeof(struct Node));
 +	if (link->tail == NULL)
-+		malloc_failure();
++		alloc_failure();
 +	link->head->str = malloc(sizeof(char));
 +	if (link->head->str == NULL)
-+		malloc_failure();
++		alloc_failure();
 +	link->head->prev = NULL;
 +	link->head->next = link->tail;
 +	link->tail->str = malloc(sizeof(char));
 +	if (link->tail->str == NULL)
-+		malloc_failure();
++		alloc_failure();
 +	link->tail->prev = link->head;
 +	link->tail->next = NULL;
 +	link->num = 0;
@@ -58,10 +58,10 @@ index 0000000..49ae375
 +
 +	link->tail->prev = malloc(sizeof(struct Node));
 +	if (link->tail->prev == NULL)
-+		malloc_failure();
-+	link->tail->prev->str = malloc((strlen(str) + 1) * sizeof(char));
++		alloc_failure();
++	link->tail->prev->str = calloc((strlen(str) + 1), sizeof(char));
 +	if (link->tail->prev->str == NULL)
-+		malloc_failure();
++		alloc_failure();
 +	strcpy(link->tail->prev->str, str);
 +	p->next = link->tail->prev;
 +	p->next->next = link->tail;
@@ -73,7 +73,7 @@ index 0000000..49ae375
 + * If a string is found in the linked list, then delete it.
 + * Otherwise, do nothing.
 + */
-+void delete_str(struct Link *link, const char *str)
++int delete_str(struct Link *link, const char *str)
 +{
 +	struct Node *p = link->head;
 +	struct Node *tmp;
@@ -87,8 +87,10 @@ index 0000000..49ae375
 +			free(tmp->str);
 +			free(tmp);
 +			--(link->num);
++			return 1;
 +		}
 +	}
++	return 0;
 +}
 +
 +/* Delete the last node of a linked list if it exists. */
@@ -142,7 +144,7 @@ index 0000000..49ae375
 +
 diff --git a/shell/Link.h b/shell/Link.h
 new file mode 100644
-index 0000000..1a05030
+index 0000000..e80b5ee
 --- /dev/null
 +++ b/shell/Link.h
 @@ -0,0 +1,26 @@
@@ -161,10 +163,10 @@ index 0000000..1a05030
 +	int num;
 +};
 +
-+void malloc_failure(void);
++void alloc_failure(void);
 +void Init_link(struct Link *link);
 +void insert(struct Link *link, const char *str);
-+void delete_str(struct Link *link, const char *str);
++int delete_str(struct Link *link, const char *str);
 +void delete_first(struct Link *link);
 +void clear(struct Link *link);
 +int size(struct Link *link);
@@ -196,10 +198,10 @@ index 0000000..4cee0a9
 +
 +#endif
 diff --git a/shell/shell.c b/shell/shell.c
-index 07b0fbf..d8c3a45 100644
+index 07b0fbf..4cbde82 100644
 --- a/shell/shell.c
 +++ b/shell/shell.c
-@@ -1,3 +1,322 @@
+@@ -1,3 +1,331 @@
 -int main(int argc, char **argv) {
 -	return 0;
 +#include <stdio.h>
@@ -227,6 +229,8 @@ index 07b0fbf..d8c3a45 100644
 +	while (1) {
 +		printf("$");
 +		line = read_line();
++		if (line == NULL)
++			continue;
 +		if (shell_cmd(line))
 +			break;
 +	}
@@ -251,7 +255,9 @@ index 07b0fbf..d8c3a45 100644
 +
 +	insert(&history, line);
 +	args = parse_command(line, &num, " ");
-+	if (num == 0)
++	if (args == NULL)
++		;
++	else if (num == 0)
 +		delete_last(&history);
 +	else if (!strcmp(args[0], "exit"))
 +		res = EXIT_LOOP;
@@ -318,9 +324,11 @@ index 07b0fbf..d8c3a45 100644
 +	while ((p = p->next) != paths.tail) {
 +		int dir_len = strlen(p->str) + strlen(args[0]) + 2;
 +
-+		exc_dir = malloc(dir_len * sizeof(char));
-+		if (exc_dir == NULL)
-+			malloc_failure();
++		exc_dir = calloc(dir_len, sizeof(char));
++		if (exc_dir == NULL) {
++			printf("error: %s\n", strerror(errno));
++			return;
++		}
 +		strcpy(exc_dir, p->str);
 +		if (exc_dir[strlen(exc_dir)-1] != '/')
 +			strcat(exc_dir, "/");
@@ -400,9 +408,11 @@ index 07b0fbf..d8c3a45 100644
 +	char *line;
 +
 +	/* line will be freed in the shell_cmd() function. */
-+	line = malloc((strlen(str) + 1) * sizeof(char));
-+	if (line == NULL)
-+		malloc_failure();
++	line = calloc(strlen(str) + 1, sizeof(char));
++	if (line == NULL) {
++		printf("error: %s\n", strerror(errno));
++		return;
++	}
 +	strcpy(line, str);
 +	shell_cmd(line);
 +}
@@ -421,16 +431,15 @@ index 07b0fbf..d8c3a45 100644
 +	}
 +
 +	if (!strcmp(args[1], "+")) {
-+		/* Relative path should not be stored. */
-+		if (args[2][0] == '/') {
-+			/* Check for duplicate. */
-+			if (!check_duplicate(&paths, args[2]))
-+				insert(&paths, args[2]);
++		/* Relative path and duplicate should not be stored. */
++		if (args[2][0] == '/' && !check_duplicate(&paths, args[2])) {
++			insert(&paths, args[2]);
 +		} else
-+			printf("error: %s\n", "Invalid path command");
-+	} else if (!strcmp(args[1], "-"))
-+		delete_str(&paths, args[2]);
-+	else
++			printf("error: %s\n", "Relative path or duplicate");
++	} else if (!strcmp(args[1], "-")) {
++		if(!delete_str(&paths, args[2]))
++			printf("error: %s\n", "No such a directory");
++	} else
 +		printf("error: %s\n", "Invalid path command");
 +}
 +
@@ -490,8 +499,10 @@ index 07b0fbf..d8c3a45 100644
 +	char *arg;
 +	char **args = malloc(MAX_ARG * sizeof(char *));
 +
-+	if (args == NULL)
-+		malloc_failure();
++	if (args == NULL) {
++		printf("error: %s\n", strerror(errno));
++		return NULL;
++	}
 +	*num = 0;
 +	/* strtok() is used to extract tokens from strings. */
 +	arg = strtok(line, delim);
@@ -515,7 +526,7 @@ index 07b0fbf..d8c3a45 100644
 +	if (getline(&line, &len, stdin) == -1) {
 +		printf("error: %s\n", "Cannot read a line");
 +		free(line);
-+		exit(EXIT_FAILURE);
++		return NULL;
 +	}
 +	len = strlen(line);
 +	if (line[len-1] == EOF || line[len-1] == '\n')

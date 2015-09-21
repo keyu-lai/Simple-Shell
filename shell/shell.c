@@ -226,12 +226,12 @@ void shell_path(char **args, int num)
 
 	if (!strcmp(args[1], "+")) {
 		/* Relative path and duplicate should not be stored. */
-		if (args[2][0] == '/' && !check_duplicate(&paths, args[2])) {
+		if (args[2][0] == '/' && !check_duplicate(&paths, args[2]))
 			insert(&paths, args[2]);
-		} else
+		else
 			printf("error: %s\n", "Relative path or duplicate");
 	} else if (!strcmp(args[1], "-")) {
-		if(!delete_str(&paths, args[2]))
+		if (!delete_str(&paths, args[2]))
 			printf("error: %s\n", "No such a directory");
 	} else
 		printf("error: %s\n", "Invalid path command");
