@@ -1,0 +1,32 @@
+INSTRUCTION:
+
+The source code of this shell includes two parts: main process(shell.c and shell.h) and linked list(Link.c and Link.h). The first part is in control of the whole program and decides which function to be called when a command is entered. The second part implement the data structure ¡°doubly linked list¡±. It is used to store history commands and an built-in environment variable ¡ª- paths.  
+
+Basically, the main function is a while loop. In every loop, it will wait for an input, compare it with the built-in commands and decide which function to be called. Its function can be divided in to two parts: runs a valid executable or implements five built-in commands: exit, cd, pwd, path, history. 
+
+We assume that an error that cause an overall disfunction would force the shell to end(e.g. Failure to allocate space for storing paths). Otherwise, it would continue to wait for the next input.
+
+PART ONE:
+
+In this part, we focus on running executables. Basically, we assume that each input is an executable if it doesn¡¯t match any built-in command. Then we try to execute it. If it could not be executed, we would print out the error message and wait for a next command. 
+
+After a line is input, we would call a function to parse out it into a command and its arguments. The maximum number of arguments is 128.
+
+When it comes to run an executable, we will first call fork() to create a child process . In the child process, we would search for the executable and try to use execv() to run it. If one is valid, the child process would be replaced. Otherwise, the child process just prints out the error message, frees all dynamically allocated space and exits. The parent process would wait for the child to finish. 
+
+When searching for an executable. We would first check if it is associated with a directory. If so, we would run it directly. Otherwise, we would search for it in all the paths we stored. 
+
+PART TWO:
+
+In this part, we will implement five built-in commands: exit, cd, pwd, path, history. The overall assumption is that a command and its arguments should match the built-in commands exactly. Otherwise, it would be counted as invalid and an error message will be output.
+
+If a command match ¡°exit¡±, then the loop would end after clear all the dynamical allocated space. For cd, chdir() is used to achieved this command. pwd is implements by calling getcwd().
+
+Path command is stored in a doubly linked list. A relative path and exact duplicate would be counted as invalid. But this situation is allowed: /bin:/bin/, and we can only delete the exact matching path(e.g. ¡°/bin¡± can not delete ¡°/bin/¡±). 
+
+History command is also stored in a doubly linked list we created. Any history command will not be stored. If a valid offset is provided, we would look for that specific command, execute it again and store it. The maximum number of history commands stored is 100. 
+
+
+
+
+

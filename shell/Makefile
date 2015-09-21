@@ -3,7 +3,7 @@ CFLAGS := -Wall -Werror
 LDFLAGS :=
 
 
-OBJECTS := shell.o
+OBJECTS := shell.o Link.o
 
 all: w4118_sh
 
@@ -17,5 +17,6 @@ w4118_sh: $(OBJECTS)
 clean:
 	rm -f w4118_sh
 	rm -f shell.o
+	rm -f Link.o
 
 .PHONY: clean

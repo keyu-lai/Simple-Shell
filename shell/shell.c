@@ -23,6 +23,8 @@ int main(int argc, char **argv)
 	while (1) {
 		printf("$");
 		line = read_line();
+		if (line == NULL)
+			continue;
 		if (shell_cmd(line))
 			break;
 	}
@@ -47,7 +49,9 @@ int shell_cmd(char *line)
 
 	insert(&history, line);
 	args = parse_command(line, &num, " ");
-	if (num == 0)
+	if (args == NULL)
+		;
+	else if (num == 0)
 		delete_last(&history);
 	else if (!strcmp(args[0], "exit"))
 		res = EXIT_LOOP;
@@ -114,9 +118,11 @@ void search(char **args, int num)
 	while ((p = p->next) != paths.tail) {
 		int dir_len = strlen(p->str) + strlen(args[0]) + 2;
 
-		exc_dir = malloc(dir_len * sizeof(char));
-		if (exc_dir == NULL)
-			malloc_failure();
+		exc_dir = calloc(dir_len, sizeof(char));
+		if (exc_dir == NULL) {
+			printf("error: %s\n", strerror(errno));
+			return;
+		}
 		strcpy(exc_dir, p->str);
 		if (exc_dir[strlen(exc_dir)-1] != '/')
 			strcat(exc_dir, "/");
@@ -196,9 +202,11 @@ void execute_his(const char *str)
 	char *line;
 
 	/* line will be freed in the shell_cmd() function. */
-	line = malloc((strlen(str) + 1) * sizeof(char));
-	if (line == NULL)
-		malloc_failure();
+	line = calloc(strlen(str) + 1, sizeof(char));
+	if (line == NULL) {
+		printf("error: %s\n", strerror(errno));
+		return;
+	}
 	strcpy(line, str);
 	shell_cmd(line);
 }
@@ -217,16 +225,15 @@ void shell_path(char **args, int num)
 	}
 
 	if (!strcmp(args[1], "+")) {
-		/* Relative path should not be stored. */
-		if (args[2][0] == '/') {
-			/* Check for duplicate. */
-			if (!check_duplicate(&paths, args[2]))
-				insert(&paths, args[2]);
+		/* Relative path and duplicate should not be stored. */
+		if (args[2][0] == '/' && !check_duplicate(&paths, args[2])) {
+			insert(&paths, args[2]);
 		} else
-			printf("error: %s\n", "Invalid path command");
-	} else if (!strcmp(args[1], "-"))
-		delete_str(&paths, args[2]);
-	else
+			printf("error: %s\n", "Relative path or duplicate");
+	} else if (!strcmp(args[1], "-")) {
+		if(!delete_str(&paths, args[2]))
+			printf("error: %s\n", "No such a directory");
+	} else
 		printf("error: %s\n", "Invalid path command");
 }
 
@@ -286,8 +293,10 @@ char **parse_command(char *line, int *num, char *delim)
 	char *arg;
 	char **args = malloc(MAX_ARG * sizeof(char *));
 
-	if (args == NULL)
-		malloc_failure();
+	if (args == NULL) {
+		printf("error: %s\n", strerror(errno));
+		return NULL;
+	}
 	*num = 0;
 	/* strtok() is used to extract tokens from strings. */
 	arg = strtok(line, delim);
@@ -311,7 +320,7 @@ char *read_line(void)
 	if (getline(&line, &len, stdin) == -1) {
 		printf("error: %s\n", "Cannot read a line");
 		free(line);
-		exit(EXIT_FAILURE);
+		return NULL;
 	}
 	len = strlen(line);
 	if (line[len-1] == EOF || line[len-1] == '\n')
