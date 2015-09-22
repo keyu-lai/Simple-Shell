@@ -22,7 +22,7 @@ In this part, we will implement five built-in commands: exit, cd, pwd, path, his
 
 If a command match ¡°exit¡±, then the loop would end after clear all the dynamical allocated space. For cd, chdir() is used to achieved this command. pwd is implements by calling getcwd().
 
-Path command is stored in a doubly linked list. A relative path and exact duplicate would be counted as invalid. But this situation is allowed: /bin:/bin/, and we can only delete the exact matching path(e.g. ¡°/bin¡± can not delete ¡°/bin/¡±). 
+Path command is stored in a doubly linked list. A relative path and exact duplicate would not be stored. But this situation is allowed: /bin:/bin/, and we can only delete the exact matching path(e.g. ¡°/bin¡± can not delete ¡°/bin/¡±). 
 
 History command is also stored in a doubly linked list we created. Any history command will not be stored. If a valid offset is provided, we would look for that specific command, execute it again and store it. The maximum number of history commands stored is 100. 
 
@@ -57,11 +57,9 @@ $path - /bin
 $path
 /bin/
 $path - /bin
-error: No such a directory
 $path + /bin/
-error: Relative path or duplicate
 $path + Desktop/
-error: Relative path or duplicate
+error: Relative path is invalid
 $path + /home/w4118
 $path + /home/w4118/shell
 $path
