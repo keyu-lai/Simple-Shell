@@ -81,32 +81,33 @@ error: No such file or directory
 $cd sdfsd sdfs
 error: Invalid cd command
 $history
-0 ls
-1 path + /bin
-2 path
-3 ls -l
-4 ./ls
-5   &*&
-6 path + /bin/
-7 path
-8 path - /bin
-9 path
-10 path - /bin
-11 path + /bin/
-12 path + Desktop/
-13 path + /home/w4118
-14 path + /home/w4118/shell
-15 path
-16 pwd
-17 pwd df
-18 cd ..
-19 pwd
-20 cd /home/w4118/shell
-21 pwd
-22 cd
-23 cd /sdfd/sdfd
-24 cd sdfsd sdfs
-$history 3
+0 path
+1 ls
+2 path + /bin
+3 path
+4 ls -l
+5 ./ls
+6   &*&
+7 path + /bin/
+8 path
+9 path - /bin
+10 path
+11 path - /bin
+12 path + /bin/
+13 path + Desktop/
+14 path + /home/w4118
+15 path + /home/w4118/shell
+16 path
+17 pwd
+18 pwd df
+19 cd ..
+20 pwd
+21 cd /home/w4118/shell
+22 pwd
+23 cd
+24 cd /sdfd/sdfd
+25 cd sdfsd sdfs
+$history 4
 total 64
 -rw-r！r！- 1 w4118 w4118  2846 Sep 21 10:01 Link.c
 -rw-r！r！- 1 w4118 w4118   533 Sep 21 10:01 Link.h
@@ -118,33 +119,34 @@ total 64
 -rw-r！r！- 1 w4118 w4118 10808 Sep 21 10:02 shell.o
 -rw-r！r！- 1 w4118 w4118 15344 Sep 21 10:02 w4118_sh
 $history
-0 ls
-1 path + /bin
-2 path
-3 ls -l
-4 ./ls
-5   &*&
-6 path + /bin/
-7 path
-8 path - /bin
-9 path
-10 path - /bin
-11 path + /bin/
-12 path + Desktop/
-13 path + /home/w4118
-14 path + /home/w4118/shell
-15 path
-16 pwd
-17 pwd df
-18 cd ..
-19 pwd
-20 cd /home/w4118/shell
-21 pwd
-22 cd
-23 cd /sdfd/sdfd
-24 cd sdfsd sdfs
-25 ls -l
-$history 26
+0 path
+1 ls
+2 path + /bin
+3 path
+4 ls -l
+5 ./ls
+6   &*&
+7 path + /bin/
+8 path
+9 path - /bin
+10 path
+11 path - /bin
+12 path + /bin/
+13 path + Desktop/
+14 path + /home/w4118
+15 path + /home/w4118/shell
+16 path
+17 pwd
+18 pwd df
+19 cd ..
+20 pwd
+21 cd /home/w4118/shell
+22 pwd
+23 cd
+24 cd /sdfd/sdfd
+25 cd sdfsd sdfs
+26 ls -l
+$history 27
 error: Invalid history command
 $history + /home
 error: Invalid history command
