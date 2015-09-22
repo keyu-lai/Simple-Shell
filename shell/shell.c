@@ -228,7 +228,7 @@ void shell_path(char **args, int num)
 		/* Relative path and duplicate should not be stored. */
 		if (args[2][0] == '/' && !check_duplicate(&paths, args[2]))
 			insert(&paths, args[2]);
-		else if(args[2][0] != '/')
+		else if (args[2][0] != '/')
 			printf("error: %s\n", "Relative path is invalid");
 	} else if (!strcmp(args[1], "-"))
 		delete_str(&paths, args[2]);
