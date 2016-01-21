@@ -1,0 +1,155 @@
+INSTRUCTION:
+
+The source code of this shell includes two parts: main process(shell.c and shell.h) and linked list(Link.c and Link.h). The first part is in control of the whole program and decides which function to be called when a command is entered. The second part implement the data structure ＾doubly linked list￣. It is used to store history commands and an built-in environment variable ！- paths.  
+
+Basically, the main function is a while loop. In every loop, it will wait for an input, compare it with the built-in commands and decide which function to be called. Its function can be divided in to two parts: runs a valid executable or implements five built-in commands ！- exit, cd, pwd, path, history. 
+
+We assume that an error that cause an overall disfunction would force the shell to end(e.g. Failure to allocate space for storing paths). Otherwise, it would continue to wait for the next input.
+
+PART ONE:
+
+In this part, we focus on running executables. Basically, we assume that each input is an executable if it doesn¨t match any built-in command. Then we try to execute it. If it could not be executed, we would print out the error message and wait for a next command. 
+
+After a line is input, we would call a function to parse out it into a command and its arguments. The maximum number of arguments is 128.
+
+When it comes to run an executable, we will first call fork() to create a child process . In the child process, we would search for the executable and try to use execv() to run it. If one is valid, the child process would be replaced. Otherwise, the child process just prints out the error message, frees all dynamically allocated space and exits. The parent process would wait for the child to finish. 
+
+When searching for an executable. We would first check if it is associated with a directory. If so, we would run it directly. Otherwise, we would search for it in all the paths we stored. 
+
+PART TWO:
+
+In this part, we will implement five built-in commands: exit, cd, pwd, path, history. The overall assumption is that a command and its arguments should match the built-in commands exactly. Otherwise, it would be counted as invalid and an error message will be output.
+
+If a command match ＾exit￣, then the loop would end after clear all the dynamical allocated space. For cd, chdir() is used to achieved this command. pwd is implements by calling getcwd().
+
+Path command is stored in a doubly linked list. A relative path and exact duplicate would not be stored. But this situation is allowed: /bin:/bin/, and we can only delete the exact matching path(e.g. ＾/bin￣ can not delete ＾/bin/￣). 
+
+History command is also stored in a doubly linked list we created. Any history command will not be stored. If a valid offset is provided, we would look for that specific command, execute it again and store it. The maximum number of history commands stored is 100. 
+
+TEST:
+
+$path
+
+$ls
+error: No such file or directory
+$path + /bin
+$path
+/bin
+$ls -l 
+total 64
+-rw-r！r！- 1 w4118 w4118  2846 Sep 21 10:01 Link.c
+-rw-r！r！- 1 w4118 w4118   533 Sep 21 10:01 Link.h
+-rw-r！r！- 1 w4118 w4118  4360 Sep 21 10:02 Link.o
+-rw-r！r！- 1 w4118 w4118   257 Sep 21 10:01 Makefile
+-rw-r！r！- 1 w4118 w4118  2908 Sep 21 10:01 README
+-rw-r！r！- 1 w4118 w4118  7238 Sep 21 10:01 shell.c
+-rw-r！r！- 1 w4118 w4118   454 Sep 21 10:01 Shell.h
+-rw-r！r！- 1 w4118 w4118 10808 Sep 21 10:02 shell.o
+-rw-r！r！- 1 w4118 w4118 15344 Sep 21 10:02 w4118_sh
+$./ls
+error: No such file or directory
+$  &*&
+error: No such file or directory
+$path + /bin/
+$path
+/bin:/bin/
+$path - /bin
+$path
+/bin/
+$path - /bin
+$path + /bin/
+$path + Desktop/
+error: Relative path is invalid
+$path + /home/w4118
+$path + /home/w4118/shell
+$path
+/bin/:/home/w4118:/home/w4118/shell
+$pwd
+/home/w4118/shell
+$pwd df
+error: Invalid pwd command
+$cd ..
+$pwd
+/home/w4118
+$cd /home/w4118/shell
+$pwd
+/home/w4118/shell
+$cd
+error: Invalid cd command
+$cd /sdfd/sdfd
+error: No such file or directory
+$cd sdfsd sdfs
+error: Invalid cd command
+$history
+0 path
+1 ls
+2 path + /bin
+3 path
+4 ls -l
+5 ./ls
+6   &*&
+7 path + /bin/
+8 path
+9 path - /bin
+10 path
+11 path - /bin
+12 path + /bin/
+13 path + Desktop/
+14 path + /home/w4118
+15 path + /home/w4118/shell
+16 path
+17 pwd
+18 pwd df
+19 cd ..
+20 pwd
+21 cd /home/w4118/shell
+22 pwd
+23 cd
+24 cd /sdfd/sdfd
+25 cd sdfsd sdfs
+$history 4
+total 64
+-rw-r！r！- 1 w4118 w4118  2846 Sep 21 10:01 Link.c
+-rw-r！r！- 1 w4118 w4118   533 Sep 21 10:01 Link.h
+-rw-r！r！- 1 w4118 w4118  4360 Sep 21 10:02 Link.o
+-rw-r！r！- 1 w4118 w4118   257 Sep 21 10:01 Makefile
+-rw-r！r！- 1 w4118 w4118  2908 Sep 21 10:01 README
+-rw-r！r！- 1 w4118 w4118  7238 Sep 21 10:01 shell.c
+-rw-r！r！- 1 w4118 w4118   454 Sep 21 10:01 Shell.h
+-rw-r！r！- 1 w4118 w4118 10808 Sep 21 10:02 shell.o
+-rw-r！r！- 1 w4118 w4118 15344 Sep 21 10:02 w4118_sh
+$history
+0 path
+1 ls
+2 path + /bin
+3 path
+4 ls -l
+5 ./ls
+6   &*&
+7 path + /bin/
+8 path
+9 path - /bin
+10 path
+11 path - /bin
+12 path + /bin/
+13 path + Desktop/
+14 path + /home/w4118
+15 path + /home/w4118/shell
+16 path
+17 pwd
+18 pwd df
+19 cd ..
+20 pwd
+21 cd /home/w4118/shell
+22 pwd
+23 cd
+24 cd /sdfd/sdfd
+25 cd sdfsd sdfs
+26 ls -l
+$history 27
+error: Invalid history command
+$history + /home
+error: Invalid history command
+$history -c
+$history
+$exit
